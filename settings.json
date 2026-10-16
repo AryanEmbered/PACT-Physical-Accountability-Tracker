@@ -1,0 +1,18 @@
+{
+  "base_url": "http://127.0.0.1:1234/v1",
+  "model": "",
+  "api_key": "",
+  "camera_index": 0,
+  "image_width": 640,
+  "image_height": 360,
+  "jpeg_quality": 80,
+  "window": 4,
+  "threshold": 3,
+  "grace_seconds": 90,
+  "nag_cooldown": 60,
+  "llm_timeout": 90,
+  "settle_seconds": 1,
+  "history_images": 3,
+  "history_messages": 5,
+  "preview": true
+}

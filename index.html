@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PACT</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐱</text></svg>">
+<style>
+:root{--ink:#1f1e1c;--muted:#7c776c;--paper:#ffffff;--line:#e9e3d5;--gold:#c29227;--sage:#e1eee0;--sageink:#2e6b3b;--rose:#fbeae5;--roseink:#a94432;--shadow:0 14px 40px rgba(50,40,20,.06);--shadow-sm:0 4px 14px rgba(50,40,20,.04)}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:#f6f3eb;color:var(--ink);font:14.5px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0}
+.app{max-width:1380px;margin:0 auto;padding:18px 24px 48px}.hidden{display:none!important}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.brand{font-weight:800;letter-spacing:-.04em;font-size:20px;display:flex;align-items:center;gap:10px}
+.brand b{color:var(--gold)}
+.brand-icon{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:12px;background:#f4ebd4;border:1px solid #e3d3a3;font-size:19px;line-height:1;flex:none;box-shadow:var(--shadow-sm)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.button{border-radius:10px;padding:8px 13px;background:var(--paper);border:1px solid var(--line);font-size:12.5px;font-weight:650;box-shadow:var(--shadow-sm);transition:.14s}
+.button:hover{background:#fff;border-color:#d5cdbc}
+.button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.button.active{background:#f4ebd4;border-color:#d9c595;color:#6b5113}
+.button.warn{background:#fff3ef;color:var(--roseink);border-color:#f2d5cb}
+.conn{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow-sm);font-size:12px;font-weight:650;color:var(--muted)}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:#c9c6ba;flex:none}
+.conn.up{border-color:#d0e6cf}.conn.up .conn-dot{background:#4fb85a}
+.conn.down{border-color:#f0d7cd}.conn.down .conn-dot{background:#d9534f}
+.notice{max-width:900px;margin:0 auto 14px;padding:10px 14px;border-radius:12px;background:#fff0eb;color:var(--roseink);font-size:13px;border:1px solid #f6cfc4}
+
+/* Layout */
+.view-shell{display:grid;grid-template-columns:minmax(340px,460px) 1fr;gap:20px;align-items:start}
+.badge-rail{display:flex;gap:6px;flex-wrap:wrap;min-height:30px;margin-bottom:10px;align-items:center}
+.pill{border-radius:999px;padding:5px 11px;background:var(--paper);border:1px solid var(--line);color:var(--muted);font-size:12px;font-weight:650}
+.pill.block{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pill.active{background:#fcf2d7;border-color:#ebd48d;color:#6f5512}
+
+/* Hero Stage */
+.hero{position:relative;text-align:center;padding:24px 20px;border-radius:24px;background:#ffffff;border:1px solid var(--line);box-shadow:var(--shadow)}
+.stage{position:relative;width:210px;height:210px;margin:0 auto 2px}
+.stage .avatar{width:100%;height:100%}.stage.cam{width:100%;max-width:440px;height:auto}.stage.cam .avatar{display:none}
+.avatar{--fur1:#f7dcae;--fur2:#e7bd7e;--ink:#4a3a25;--pink:#f6c7bf}
+.avatar.mood-happy{--fur1:#c3e6a8;--fur2:#93cf7f}.avatar.mood-watching{--fur1:#c3e0f2;--fur2:#96c4e2}
+.avatar.mood-suspicious{--fur1:#f6d79a;--fur2:#e7b567}.avatar.mood-angry{--fur1:#f3b7a5;--fur2:#e28c75}.avatar.mood-paused{--fur1:#dcd9cf;--fur2:#c6c3b8}
+.avatar .cat{transform-box:fill-box;transform-origin:center 70%;animation:breathe 3.8s ease-in-out infinite}
+.avatar .tail{transform-box:fill-box;transform-origin:0% 100%;animation:tail 3s ease-in-out infinite}
+.avatar.mood-happy .cat{animation:bounce .95s ease-in-out infinite}.avatar.mood-angry .cat{animation:shake .3s linear infinite}
+.avatar.mood-suspicious .cat{animation:tilt 2.8s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.022)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes tilt{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+@keyframes tail{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(8deg)}}
+.avatar .eyes{display:none}.avatar .eyes-open{display:block}.avatar.mood-happy .eyes-open,.avatar.mood-paused .eyes-open{display:none}
+.avatar.mood-happy .eyes-happy,.avatar.mood-paused .eyes-closed{display:block}
+.avatar .brows{display:none}.avatar.mood-suspicious .brows,.avatar.mood-angry .brows{display:block}
+.avatar .mo{display:none}.avatar .m-chill{display:block}.avatar.mood-happy .m-chill,.avatar.mood-suspicious .m-chill,.avatar.mood-paused .m-chill,.avatar.mood-angry .m-chill{display:none}
+.avatar.mood-happy .m-happy{display:block}.avatar.mood-suspicious .m-flat,.avatar.mood-paused .m-flat{display:block}.avatar.mood-angry .m-angry{display:block}
+.camera{position:absolute;inset:0;border-radius:20px;overflow:hidden;background:#14130f;border:1px solid #e0d8c8}
+.stage.cam .camera{position:relative;inset:auto;width:100%;aspect-ratio:16/9}.camera[hidden]{display:none}
+.camera img{display:block;width:100%;height:100%;aspect-ratio:16/9;object-fit:cover}
+.camera p{margin:0;height:100%;display:grid;place-items:center;padding:16px;color:#c9c6ba;font-size:13px;text-align:center}
+
+.current-label{font-size:24px;font-weight:800;letter-spacing:-.04em;text-transform:capitalize;margin-top:4px}
+.current-detail{max-width:440px;margin:6px auto 0;color:var(--muted);font-size:13.5px;min-height:20px}
+.change{display:inline-block;margin-top:9px;border-radius:999px;padding:4px 12px;background:#e3f3e1;color:#286834;font-size:12px;font-weight:700;border:1px solid #bde6ba}
+.change[hidden]{display:none}
+.status{display:inline-flex;align-items:center;gap:7px;margin-top:10px;font-size:12px;color:var(--muted);font-weight:600}
+.dot{width:7px;height:7px;border-radius:50%;background:#c9c6ba;display:inline-block}
+.dot.live{background:#67ba62;animation:pulse 1.4s ease-in-out infinite}.dot.busy{background:var(--gold);animation:pulse .7s ease-in-out infinite}.dot.off{background:#de9a86}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
+
+/* Pattern Single Paragraph Card */
+.pattern-card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:20px 22px;box-shadow:var(--shadow-sm);margin-bottom:16px}
+.pattern-card .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.pattern-card h3{margin:0;font-size:14px;letter-spacing:-.02em;color:var(--ink);font-weight:750}
+.pattern-card .badge-tag{font-size:11px;font-weight:700;color:#6b4d89;background:#f3eef8;border:1px solid #decfe9;padding:3px 8px;border-radius:999px}
+.pattern-paragraph{margin:0;font-size:13.5px;line-height:1.65;color:#3f3b33}
+
+/* Cards & Inferences */
+.card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:18px 20px;box-shadow:var(--shadow-sm);margin-bottom:16px}
+.section-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:12px}
+.section-title h2{font-size:14px;letter-spacing:-.02em;margin:0}.section-title span{font-size:12px;color:var(--muted);font-weight:600}
+.routine-item{display:grid;grid-template-columns:88px 1fr;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.routine-item:first-child{border-top:0}.routine-time{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+.routine-item strong{display:block;font-size:13px}.routine-item span{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+.routine-item.active{margin:0 -8px;padding:10px 8px;border-radius:12px;background:#fcf3db}
+.inference{display:grid;grid-template-columns:56px 1fr;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.inference:first-child{border-top:0}.inference time{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+.inference strong{font-size:13px;text-transform:capitalize}.inference .seq{font-size:11px;color:var(--muted);font-weight:600;margin-left:6px}
+.inference p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.inference p.has-chg{color:#25612f;font-weight:600}
+
+/* Subtle Schedule Strip (for Minimal Mode) */
+.schedule-strip{display:flex;gap:8px;overflow-x:auto;padding:10px 0;margin-top:16px;border-top:1px solid var(--line)}
+.strip-item{padding:5px 10px;border-radius:8px;background:var(--paper);border:1px solid var(--line);font-size:11.5px;color:var(--muted);white-space:nowrap}
+.strip-item.active{background:#fcf3db;border-color:#ebd48d;color:#6f5512;font-weight:700}
+
+/* Smooth repositioning base (applies in both modes so toggling animates) */
+.view-shell,.view-left,.view-right,.hero,.pattern-card,.badge-rail,.pattern-card .head{transition:background-color .55s ease,border-color .55s ease,color .55s ease,box-shadow .55s ease,transform .5s cubic-bezier(.22,.8,.28,1),opacity .45s ease,max-height .5s ease,margin .5s ease,padding .5s ease}
+.badge-rail{overflow:hidden;max-height:60px;opacity:1;transform:translateY(0)}
+.pattern-card .badge-tag{transition:opacity .35s ease,transform .35s ease}
+.pattern-card .head{justify-content:space-between}
+
+/* Minimal Mode Styling — cozy dim */
+body.minimal-mode{background:radial-gradient(1100px 500px at 50% -8%,#3a3128 0%,#26211b 52%,#1e1a15 100%);color:#e9dfc9}
+body.minimal-mode .topbar .conn,
+body.minimal-mode #promptButton,
+body.minimal-mode #clearButton,
+body.minimal-mode #editButton,
+body.minimal-mode .standard-logs{display:none!important}
+body.minimal-mode .view-shell{grid-template-columns:1fr;max-width:620px;margin:6px auto 0;gap:14px}
+body.minimal-mode .topbar{justify-content:center;text-align:center}
+body.minimal-mode .brand{color:#f0e6d2;font-size:17px}
+body.minimal-mode .brand-icon{background:#383026;border-color:#54483a;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+body.minimal-mode .actions .button{background:#2c261f;border-color:#413829;color:#cbbfa5;box-shadow:none}
+body.minimal-mode .actions .button.active{background:#413626;border-color:#6b5a3e;color:#f0dcae}
+/* Left side: badge rail fades/collapses away, hero dims and settles to center */
+body.minimal-mode .badge-rail{opacity:0;transform:translateY(-8px);max-height:0;min-height:0;margin-bottom:0;pointer-events:none}
+body.minimal-mode .hero{background:#2b251e;border-color:#403729;box-shadow:0 18px 50px rgba(0,0,0,.35),0 0 0 1px rgba(255,220,160,.04) inset;padding:20px 18px 18px}
+body.minimal-mode .current-label{color:#f2e8d3}
+body.minimal-mode .current-detail{color:#a89a83}
+body.minimal-mode .status{color:#8d8171}
+/* Right side: habit pattern card loses badge, centers and softens */
+body.minimal-mode .pattern-card{background:#2b251e;border-color:#403729;box-shadow:0 18px 50px rgba(0,0,0,.35);text-align:center;padding:18px 22px}
+body.minimal-mode .pattern-card .head{justify-content:center;margin-bottom:6px}
+body.minimal-mode .pattern-card h3{color:#e8dcc2;font-size:13px;font-weight:700;letter-spacing:.02em}
+body.minimal-mode .pattern-card .badge-tag{opacity:0;transform:translateY(-4px);max-height:0;overflow:hidden;padding:0;border:0;pointer-events:none;position:absolute;visibility:hidden}
+body.minimal-mode .pattern-paragraph{color:#c9bda3;font-size:13px}
+body.minimal-mode .schedule-strip{border-top-color:#3a332a;justify-content:center}
+body.minimal-mode .strip-item{background:#2b251e;border-color:#403729;color:#8d8171}
+body.minimal-mode .strip-item.active{background:#413626;border-color:#6b5a3e;color:#f0dcae}
+body.minimal-mode .camera{background:#171310;border-color:#3a332a}
+body.minimal-mode .change{background:#33402e;color:#b8d6a8;border-color:#4a5c42}
+body.minimal-mode .notice{background:#33272a;color:#d8a89a;border-color:#5a3d36}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(20,18,14,.6);display:grid;place-items:center;z-index:99;padding:16px}
+.modal-box{background:var(--paper);border:1px solid var(--line);border-radius:20px;width:100%;max-width:780px;max-height:85vh;display:flex;flex-direction:column;padding:20px;box-shadow:var(--shadow)}
+.prompt-pre{background:#161512;color:#ede9df;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;padding:14px;border-radius:12px;overflow:auto;flex:1;white-space:pre-wrap;line-height:1.55}
+
+/* Editor */
+.edit-head{display:flex;justify-content:space-between;align-items:center;margin:0 0 16px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow-sm);margin-bottom:16px}
+.panel h2{font-size:16px;letter-spacing:-.03em;margin:0}.panel .intro{color:var(--muted);font-size:12.5px;margin:4px 0 14px}
+.panel-top{display:flex;justify-content:space-between;align-items:flex-start}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:680px}
+th{text-align:left;padding:9px 12px;background:#fbf7ec;color:var(--muted);font-size:10px;text-transform:uppercase}
+td{padding:9px 12px;border-top:1px solid var(--line);vertical-align:top}
+.time-input{width:100px;padding:7px;border:1px solid var(--line);border-radius:8px;background:#fff;font-weight:700}
+.name-input{border:1px solid transparent;background:transparent;border-radius:8px;padding:7px;width:100%;font-weight:700}
+.text-input{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px;width:100%}
+.chips{display:flex;gap:4px;flex-wrap:wrap;max-width:320px}
+.chip{border-radius:999px;padding:4px 8px;background:#fff;border:1px solid var(--line);color:var(--muted);font-size:11px}
+.chip.on{background:#fcf3db;border-color:#ebd48d;color:#6f5512;font-weight:700}
+.delete{color:var(--roseink);background:#fff3ef;padding:6px 9px;border-radius:8px;font-weight:800}
+.save-row{display:flex;gap:10px;justify-content:flex-end;align-items:center;margin-top:12px}
+.badge-editor{display:grid;gap:8px}
+.badge-row{display:grid;grid-template-columns:180px 1fr 36px;gap:8px;align-items:start}
+.badge-row small{display:block;font-size:11px;color:var(--muted);margin-top:4px}
+.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.field label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:5px}
+.field input[type=text],.field input[type=number],.field select{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px;background:#fff}
+@media(max-width:880px){.view-shell{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="viewMode">
+    <header class="topbar">
+      <div class="brand"><span class="brand-icon">🐱</span><span>Physical Accountability Continuous Tracker</span></div>
+      <div class="conn" id="conn">
+        <span class="conn-dot"></span><span id="connText">connecting…</span>
+      </div>
+      <div class="actions">
+        <button class="button" id="minimalButton">Minimal mode</button>
+        <button class="button" id="promptButton">View prompt</button>
+        <button class="button" id="cameraButton">Show camera</button>
+        <button class="button" id="clearButton">Clear history</button>
+        <button class="button warn hidden" id="pauseButton">Pause</button>
+        <button class="button primary" id="editButton">Edit</button>
+      </div>
+    </header>
+    <div class="notice hidden" id="notice"></div>
+
+    <main class="view-shell">
+      <section class="view-left">
+        <div class="badge-rail" id="badgeRail"></div>
+        <section class="hero">
+          <div class="stage" id="cameraStage">
+            <div class="avatar mood-chill" id="avatar">
+              <svg viewBox="0 0 240 240" role="img">
+                <defs><linearGradient id="fur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--fur1)"/><stop offset="1" stop-color="var(--fur2)"/></linearGradient></defs>
+                <g class="cat">
+                  <path class="tail" d="M172 206 C218 200 226 150 200 128" fill="none" stroke="var(--fur2)" stroke-width="15" stroke-linecap="round"/>
+                  <ellipse cx="120" cy="186" rx="57" ry="42" fill="url(#fur)"/>
+                  <ellipse cx="94" cy="216" rx="18" ry="12" fill="var(--fur1)"/><ellipse cx="146" cy="216" rx="18" ry="12" fill="var(--fur1)"/>
+                  <path d="M58 92 L52 40 L104 68 Z" fill="url(#fur)"/><path d="M182 92 L188 40 L136 68 Z" fill="url(#fur)"/>
+                  <path d="M68 86 L64 54 L96 72 Z" fill="var(--pink)"/><path d="M172 86 L176 54 L144 72 Z" fill="var(--pink)"/>
+                  <ellipse cx="120" cy="118" rx="72" ry="62" fill="url(#fur)"/>
+                  <ellipse cx="78" cy="136" rx="15" ry="9" fill="var(--pink)" opacity=".75"/><ellipse cx="162" cy="136" rx="15" ry="9" fill="var(--pink)" opacity=".75"/>
+                  <g class="eyes eyes-open" fill="var(--ink)">
+                    <ellipse cx="96" cy="106" rx="15" ry="16" fill="#fff"/><ellipse cx="144" cy="106" rx="15" ry="16" fill="#fff"/>
+                    <circle cx="98" cy="109" r="7"/><circle cx="146" cy="109" r="7"/>
+                  </g>
+                  <g class="eyes eyes-happy" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"><path d="M82 110 q14 -17 28 0"/><path d="M130 110 q14 -17 28 0"/></g>
+                  <g class="eyes eyes-closed" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"><path d="M82 106 h28"/><path d="M130 106 h28"/></g>
+                  <g class="brows" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"><path d="M80 86 q16 -7 32 -1"/><path d="M160 86 q-16 -7 -32 -1"/></g>
+                  <path d="M113 132 L127 132 L120 141 Z" fill="#c98b7e"/>
+                  <g fill="none" stroke="var(--ink)" stroke-width="5" stroke-linecap="round">
+                    <path class="mo m-chill" d="M118 141 q-9 11 -18 3"/><path class="mo m-chill" d="M122 141 q9 11 18 3"/>
+                    <path class="mo m-happy" d="M100 141 q20 24 40 0"/><path class="mo m-flat" d="M105 146 h30"/><path class="mo m-angry" d="M102 150 q18 -15 36 0"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+            <div class="camera" id="cameraPanel" hidden>
+              <img id="cameraImage" alt="Latest evaluated frame">
+              <p id="cameraEmpty">Waiting for camera frame…</p>
+            </div>
+          </div>
+          <div class="current-label" id="currentLabel">Waiting</div>
+          <div class="change" id="changeNote" hidden></div>
+          <div class="current-detail" id="currentDetail">Connecting to vision stream…</div>
+          <div class="status" id="statusLine"><span class="dot" id="statusDot"></span><span id="statusText">connecting…</span></div>
+        </section>
+      </section>
+
+      <section class="view-right">
+        <!-- Living Single-Paragraph Routine Card -->
+        <section class="pattern-card">
+          <div class="head">
+            <h3>Routine & Habit Pattern</h3>
+            <span class="badge-tag">Refined Every 5 Inferences</span>
+          </div>
+          <p class="pattern-paragraph" id="patternParagraph">Observing your focus and activities to construct a baseline pattern.</p>
+        </section>
+
+        <!-- Subtle Schedule Strip (visible in both minimal and normal) -->
+        <div class="schedule-strip" id="scheduleStrip"></div>
+
+        <!-- Detailed Inferences & Routine (Hidden in Minimal Mode) -->
+        <div class="standard-logs">
+          <section class="card">
+            <div class="section-title"><h2>Today’s routine</h2><span id="routineStatus"></span></div>
+            <div id="routineCard"></div>
+          </section>
+          <section class="card">
+            <div class="section-title"><h2>Recent inferences</h2><span id="frequency">Awaiting reply</span></div>
+            <div id="inferenceList"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="promptModal" class="modal hidden">
+    <div class="modal-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="margin:0;font-size:16px">Full Model Prompt</h3>
+        <button class="button" id="closePromptButton">Close</button>
+      </div>
+      <pre class="prompt-pre" id="promptContent"></pre>
+    </div>
+  </div>
+
+  <div id="editMode" class="hidden">
+    <header class="edit-head">
+      <div><h1 style="font-size:22px;margin:0">Editor</h1></div>
+      <button class="button primary" id="viewButton">Done</button>
+    </header>
+
+    <div class="panel">
+      <div class="panel-top">
+        <div><h2>Routine</h2><p class="intro">Set time blocks and allowed activity badges.</p></div>
+        <button class="button" id="addRoutine">+ Add routine</button>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Time</th><th>Routine</th><th>Badges that count</th><th></th></tr></thead>
+        <tbody id="scheduleRows"></tbody>
+      </table></div>
+      <div class="save-row"><span class="save-note" id="scheduleNote"></span><button class="button primary" id="saveSchedule">Save routine</button></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-top">
+        <div><h2>Badges</h2><p class="intro">Allowed activity labels.</p></div>
+        <button class="button" id="addBadge">+ Add badge</button>
+      </div>
+      <div class="badge-editor" id="badgeRows"></div>
+      <div class="save-row"><span class="save-note" id="badgeNote"></span><button class="button primary" id="saveBadges">Save badges</button></div>
+    </div>
+
+    <details class="panel">
+      <summary style="cursor:pointer;font-weight:700">Model & Camera Settings</summary>
+      <div class="settings" id="settingsFields" style="margin-top:14px"></div>
+      <div class="save-row"><span class="save-note" id="settingsNote"></span><button class="button primary" id="saveSettings">Save settings</button></div>
+    </details>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const nice = s => (s || '').replace(/_/g, ' ');
+let ST = null, schedule = [], badges = [], camera = false, minimal = false,
+    first = true, lastNag = null, paused = false, lastRenderedSeq = null;
+
+function el(tag, props = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') n.className = v;
+    else if (k === 'text') n.textContent = v;
+    else n.setAttribute(k, v);
+  }
+  kids.flat().forEach(x => n.append(x));
+  return n;
+}
+
+async function poll() {
+  try {
+    const r = await fetch('/api/state');
+    if (!r.ok) throw 0;
+    ST = await r.json();
+    setConnected(true);
+    render();
+  } catch (_) {
+    setConnected(false);
+  }
+  setTimeout(poll, 1000);
+}
+
+function setConnected(up) {
+  const c = $('#conn');
+  c.classList.toggle('up', up); c.classList.toggle('down', !up);
+  $('#connText').textContent = up ? 'connected' : 'disconnected';
+}
+
+function render() {
+  const s = ST;
+  const issue = s.error || s.camera_error || s.note;
+  $('#notice').textContent = issue || '';
+  $('#notice').classList.toggle('hidden', !issue);
+
+  if (first) {
+    first = false;
+    schedule = structuredClone(s.schedule);
+    badges = structuredClone(s.badges);
+    lastNag = s.nag_id;
+    try { camera = localStorage.getItem('pact_cam') === '1'; } catch (_) {}
+    try { minimal = localStorage.getItem('pact_minimal') === '1'; } catch (_) {}
+    document.body.classList.toggle('minimal-mode', minimal);
+    $('#minimalButton').classList.toggle('active', minimal);
+    renderSchedule(); renderBadges(); buildSettings();
+  }
+
+  paused = s.paused;
+  $('#pauseButton').classList.toggle('hidden', false);
+  $('#pauseButton').textContent = paused ? 'Resume' : 'Pause';
+  $('#pauseButton').classList.toggle('warn', !paused);
+
+  $('#avatar').className = 'avatar mood-' + s.mood;
+  $('#currentLabel').textContent = s.activity ? nice(s.activity) : 'Waiting';
+
+  if (s.change) {
+    $('#changeNote').textContent = s.change;
+    $('#changeNote').hidden = false;
+  } else {
+    $('#changeNote').hidden = true;
+  }
+  $('#currentDetail').textContent = s.description || '';
+  $('#patternParagraph').textContent = s.pattern_paragraph || 'Observing activity…';
+
+  const dot = $('#statusDot'), txt = $('#statusText');
+  dot.className = 'dot';
+  if (s.camera_error) { dot.classList.add('off'); txt.textContent = s.camera_error; }
+  else if (s.paused) { dot.classList.add('off'); txt.textContent = 'paused'; }
+  else if (s.latency) {
+    const isBusy = s.inferring;
+    dot.classList.add(isBusy ? 'busy' : 'live');
+    const stageDesc = s.infer_stage === 'pattern' ? 'synthesizing pattern…' : 'analyzing…';
+    txt.textContent = (isBusy ? stageDesc + ' · last ' : 'live · last ') + s.latency.toFixed(1) + 's';
+  } else { txt.textContent = s.inferring ? 'analyzing…' : 'ready…'; }
+
+  renderRail(); renderCamera(); renderRoutine(); renderInferences(); renderScheduleStrip();
+  $('#frequency').textContent = s.latency ? 'last reply ' + s.latency.toFixed(1) + 's' : 'awaiting reply';
+}
+
+function renderRail() {
+  const rail = $('#badgeRail'); rail.replaceChildren();
+  if (ST.block) rail.append(el('span', { class: 'pill block', text: ST.block.name + ' · ' + ST.block.start + '–' + ST.block.end }));
+  (ST.applicable || []).forEach(id => {
+    const b = ST.badges.find(x => x.id === id);
+    if (b) rail.append(el('span', { class: 'pill active', title: b.desc, text: b.name || nice(id) }));
+  });
+}
+
+function renderCamera() {
+  const stage = $('#cameraStage'), p = $('#cameraPanel'), img = $('#cameraImage'), empty = $('#cameraEmpty');
+  stage.classList.toggle('cam', camera);
+  p.hidden = !camera;
+  $('#cameraButton').textContent = camera ? 'Show avatar' : 'Show camera';
+  if (camera && ST.has_preview) {
+    img.hidden = false; empty.hidden = true;
+    if (ST.frame_seq !== lastRenderedSeq) {
+      lastRenderedSeq = ST.frame_seq;
+      img.src = '/api/frame.jpg?seq=' + ST.frame_seq;
+    }
+  } else if (camera) {
+    img.hidden = true; empty.hidden = false;
+  }
+}
+
+function renderScheduleStrip() {
+  const strip = $('#scheduleStrip'), active = ST.block?.id;
+  strip.replaceChildren();
+  if (!ST.schedule || !ST.schedule.length) return;
+  ST.schedule.forEach(row => {
+    strip.append(el('div', { class: 'strip-item ' + (row.id === active ? 'active' : '') },
+      `${row.start}–${row.end} ${row.name}`));
+  });
+}
+
+function renderRoutine() {
+  const box = $('#routineCard'), active = ST.block?.id;
+  box.replaceChildren();
+  $('#routineStatus').textContent = ST.block ? 'Active now' : 'No active block';
+  if (!ST.schedule.length) { box.append(el('div', { class: 'empty', text: 'No schedule configured.' })); return; }
+  ST.schedule.forEach(row => {
+    const names = row.accepts.map(id => ST.badges.find(x => x.id === id)?.name || nice(id)).join(' · ');
+    box.append(el('div', { class: 'routine-item ' + (row.id === active ? 'active' : '') },
+      el('div', { class: 'routine-time', text: row.start + '–' + row.end }),
+      el('div', {}, el('strong', { text: row.name }), el('span', { text: names }))));
+  });
+}
+
+function renderInferences() {
+  const list = $('#inferenceList'), items = ST.recent || [];
+  list.replaceChildren();
+  if (!items.length) { list.append(el('div', { class: 'empty', text: 'Recent inferences will collect here.' })); return; }
+  items.forEach(x => {
+    const hasChange = !!x.change;
+    const txt = hasChange ? 'Change: ' + x.change : x.observation;
+    list.append(el('article', { class: 'inference' },
+      el('time', { text: x.time }),
+      el('div', {}, el('strong', { text: nice(x.activity) }),
+        x.seq != null ? el('span', { class: 'seq', text: '#' + x.seq }) : '',
+        el('p', { class: hasChange ? 'has-chg' : '', text: txt }))));
+  });
+}
+
+function renderSchedule() {
+  const body = $('#scheduleRows'); body.replaceChildren();
+  schedule.forEach((row, i) => {
+    const a = el('input', { class: 'time-input', type: 'time', step: '60' });
+    const z = el('input', { class: 'time-input', type: 'time', step: '60' });
+    a.value = row.start; z.value = row.end;
+    a.oninput = () => row.start = a.value; z.oninput = () => row.end = z.value;
+    const name = el('input', { class: 'name-input', type: 'text' });
+    name.value = row.name; name.oninput = () => row.name = name.value;
+    const chips = el('div', { class: 'chips' });
+    badges.forEach(b => {
+      const on = row.accepts.includes(b.id);
+      const chip = el('button', { class: 'chip ' + (on ? 'on' : ''), type: 'button', text: b.name, title: b.desc });
+      chip.onclick = () => {
+        const p = row.accepts.indexOf(b.id);
+        p < 0 ? row.accepts.push(b.id) : row.accepts.splice(p, 1);
+        renderSchedule();
+      };
+      chips.append(chip);
+    });
+    const del = el('button', { class: 'delete', type: 'button', text: '×' });
+    del.onclick = () => { schedule.splice(i, 1); renderSchedule(); };
+    body.append(el('tr', {}, el('td', {}, a, ' ', z), el('td', {}, name), el('td', {}, chips), el('td', {}, del)));
+  });
+}
+
+function renderBadges() {
+  const box = $('#badgeRows'); box.replaceChildren();
+  badges.forEach((b, i) => {
+    const name = el('input', { class: 'text-input', type: 'text', placeholder: 'Badge name' });
+    const desc = el('input', { class: 'text-input', type: 'text', placeholder: 'Criteria for vision model' });
+    name.value = b.name || nice(b.id); desc.value = b.desc;
+    name.oninput = () => b.name = name.value; desc.oninput = () => b.desc = desc.value;
+    const del = el('button', { class: 'delete', type: 'button', text: '×' });
+    del.onclick = () => { badges.splice(i, 1); renderBadges(); renderSchedule(); };
+    box.append(el('div', { class: 'badge-row' },
+      el('div', {}, name, el('small', { text: b.id ? 'id: ' + b.id : 'Auto-assigned id' })),
+      desc, del));
+  });
+}
+
+const F = [
+  ['base_url', 'Model server URL', 'text'], ['model', 'Model name', 'text'],
+  ['camera_index', 'Camera index', 'number'], ['jpeg_quality', 'JPEG quality', 'number'],
+  ['window', 'Checks to judge', 'number'], ['threshold', 'Off-task threshold', 'number'],
+  ['grace_seconds', 'Grace period (s)', 'number'], ['nag_cooldown', 'Cooldown (s)', 'number'],
+  ['llm_timeout', 'Timeout (s)', 'number'], ['settle_seconds', 'Pause between inferences (s)', 'number'],
+  ['history_images', 'Image history count', 'number'], ['history_messages', 'Past replies blacklist count', 'number']
+];
+
+function buildSettings() {
+  const box = $('#settingsFields'); box.replaceChildren();
+  const res = el('select', { id: 'set_resolution' });
+  res.append(el('option', { value: '360p', text: '360p (640x360)' }));
+  res.append(el('option', { value: '720p', text: '720p (1280x720)' }));
+  res.value = (ST.settings.image_width >= 1280 || ST.settings.image_height >= 720) ? '720p' : '360p';
+  box.append(el('div', { class: 'field' }, el('label', { for: res.id, text: 'Image resize resolution' }), res));
+  F.forEach(([k, label, type]) => {
+    const input = el('input', { type, id: 'set_' + k });
+    input.value = ST.settings[k] ?? '';
+    box.append(el('div', { class: 'field' }, el('label', { for: input.id, text: label }), input));
+  });
+}
+
+$('#minimalButton').onclick = () => {
+  minimal = !minimal;
+  localStorage.setItem('pact_minimal', minimal ? '1' : '0');
+  document.body.classList.toggle('minimal-mode', minimal);
+  $('#minimalButton').classList.toggle('active', minimal);
+};
+$('#promptButton').onclick = () => {
+  $('#promptContent').textContent = ST.last_prompt || 'No prompt recorded.';
+  $('#promptModal').classList.remove('hidden');
+};
+$('#closePromptButton').onclick = () => $('#promptModal').classList.add('hidden');
+$('#cameraButton').onclick = () => { camera = !camera; localStorage.setItem('pact_cam', camera ? '1' : '0'); renderCamera(); };
+$('#editButton').onclick = () => { $('#viewMode').classList.add('hidden'); $('#editMode').classList.remove('hidden'); };
+$('#viewButton').onclick = () => { $('#editMode').classList.add('hidden'); $('#viewMode').classList.remove('hidden'); };
+$('#pauseButton').onclick = () => fetch('/api/control', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: paused ? 'resume' : 'pause' }) });
+$('#clearButton').onclick = async () => { if (confirm('Reset inference logs and pattern summary?')) await fetch('/api/clear', { method: 'POST' }); };
+$('#addRoutine').onclick = () => { schedule.push({ start: '12:00', end: '13:00', name: 'Work Block', accepts: badges[0] ? [badges[0].id] : [] }); renderSchedule(); };
+$('#saveSchedule').onclick = async () => {
+  const r = await fetch('/api/schedule', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ schedule }) });
+  $('#scheduleNote').textContent = r.ok ? 'Saved.' : 'Failed.';
+};
+$('#addBadge').onclick = () => { badges.push({ id: '', name: 'New Badge', desc: 'Visual description.' }); renderBadges(); };
+$('#saveBadges').onclick = async () => {
+  const r = await fetch('/api/badges', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ badges }) });
+  const j = await r.json();
+  if (r.ok) { badges = structuredClone(j.badges); renderBadges(); renderSchedule(); }
+};
+$('#saveSettings').onclick = async () => {
+  const body = {};
+  F.forEach(([k, , type]) => { const v = $('#set_' + k).value; body[k] = type === 'number' ? Number(v) : v; });
+  const resV = $('#set_resolution').value;
+  if (resV === '720p') { body.image_width = 1280; body.image_height = 720; }
+  else { body.image_width = 640; body.image_height = 360; }
+  const r = await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  $('#settingsNote').textContent = r.ok ? 'Settings saved.' : 'Save failed.';
+};
+
+poll();
+</script>
+</body>
+</html>
